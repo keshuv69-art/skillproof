@@ -55,8 +55,8 @@ export default async function AdminPage() {
               skill_name: item.skills?.[0]?.name,
               level: item.level,
               proof_url: item.proof_url,
-              user_email: item.profiles?.email,
-              username: item.profiles?.username,
+              user_email: item.profiles?.[0]?.email,
+              username: item.profiles?.[0]?.username,
             }}
           />
         ))}
