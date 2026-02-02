@@ -52,11 +52,11 @@ export default async function AdminPage() {
             key={item.id}
             proof={{
               id: item.id,
-              skill_name: item.skills?.[0]?.name,
+              skill_name: item.skills?.[0]?.name ?? "Unknown skill",
               level: item.level,
               proof_url: item.proof_url,
-              user_email: item.profiles?.[0]?.email,
-              username: item.profiles?.[0]?.username,
+              user_email: item.profiles?.[0]?.email ?? "Unknown email",
+              username: item.profiles?.[0]?.username ?? "unknown",
             }}
           />
         ))}
