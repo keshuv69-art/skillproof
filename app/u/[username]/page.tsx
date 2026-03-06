@@ -1,29 +1,34 @@
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { notFound } from "next/navigation";
+import CopyProfileLink from "@/components/CopyProfileLink";
+
+type SkillRow = {
+  level: string;
+  proof_url: string | null;
+  skills: { name: string } | { name: string }[] | null;
+};
 
 export default async function PublicProfile({
   params,
 }: {
   params: Promise<{ username: string }>;
 }) {
-  // ✅ FIX: unwrap async params
+  // ✅ unwrap params (required in your Next version)
   const { username } = await params;
 
   const supabase = await createSupabaseServer();
 
-  /* 1️⃣ Load public profile by username */
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("id, username")
     .eq("username", username)
     .single();
 
-  if (profileError || !profile) {
+  if (!profile) {
     return notFound();
   }
 
-  /* 2️⃣ Load VERIFIED skills only */
-  const { data: skills } = await supabase
+  const { data: skillsData } = await supabase
     .from("user_skills")
     .select(`
       level,
@@ -33,63 +38,84 @@ export default async function PublicProfile({
     .eq("user_id", profile.id)
     .eq("status", "verified");
 
+  const skills: SkillRow[] = skillsData ?? [];
+
   return (
-    <main className="max-w-3xl mx-auto px-6 py-12 text-white">
-      {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold">
-          @{profile.username}
-        </h1>
+    <main className="min-h-screen bg-black text-white">
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <div className="mb-12 border-b border-zinc-800 pb-8">
+          <h1 className="text-4xl font-bold">
+            @{profile.username}
+          </h1>
 
-        <p className="mt-2 text-green-400 text-sm">
-          ✔ Verified Skill Profile
-        </p>
-      </div>
+          <p className="mt-3 text-sm text-green-400">
+            ✔ Verified Skill Profile
+          </p>
 
-      {/* Skills */}
-      <h2 className="text-xl font-semibold mb-4">
-        Verified Skills
-      </h2>
+          <CopyProfileLink username={profile.username} />
 
-      {(!skills || skills.length === 0) && (
-        <p className="text-zinc-400">
-          No verified skills yet.
-        </p>
-      )}
+          <p className="mt-3 text-zinc-400 text-sm">
+            {skills.length} verified skill
+            {skills.length !== 1 && "s"}
+          </p>
+        </div>
 
-      <ul className="space-y-4">
-        {skills?.map((skill, i) => (
-          <li
-            key={i}
-            className="border border-zinc-700 rounded-xl p-4 bg-zinc-900"
-          >
-            <div className="flex justify-between items-center">
-              <strong className="text-lg">
-                {skill.skills?.name}
-              </strong>
+        <h2 className="text-xl font-semibold mb-6">
+          Verified Skills
+        </h2>
 
-              <span className="text-xs px-2 py-1 rounded bg-green-500/10 text-green-400">
-                Verified
-              </span>
-            </div>
+        {skills.length === 0 && (
+          <p className="text-zinc-500">
+            No verified skills yet.
+          </p>
+        )}
 
-            <div className="text-sm text-zinc-400 mt-1">
-              Level: {skill.level}
-            </div>
+        <div className="space-y-6">
+          {skills.map((item, i) => {
+            let skillName = "Unknown Skill";
 
-            {skill.proof_url && (
-              <a
-                href={skill.proof_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-3 text-blue-400 underline text-sm"
+            if (Array.isArray(item.skills)) {
+              skillName = item.skills[0]?.name ?? "Unknown Skill";
+            } else if (item.skills) {
+              skillName = item.skills.name;
+            }
+
+            return (
+              <div
+                key={i}
+                className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-zinc-700 transition"
               >
-                View proof
-              </a>
-            )}
-          </li>
-        ))}
-      </ul>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      {skillName}
+                    </h3>
+
+                    <p className="text-sm text-zinc-400 mt-1">
+                      Level: {item.level}
+                    </p>
+                  </div>
+
+                  <span className="text-xs px-3 py-1 rounded-full bg-green-500/10 text-green-400">
+                    Verified
+                  </span>
+                </div>
+
+                {item.proof_url && (
+                  <a
+                    href={item.proof_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-4 text-sm text-blue-400 hover:underline"
+                  >
+                    View proof →
+                  </a>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </main>
   );
 }

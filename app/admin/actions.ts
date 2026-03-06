@@ -9,25 +9,31 @@ const supabase = createClient(
 );
 
 export async function verifySkill(id: string) {
-  await supabase
+  const { error } = await supabase
     .from("user_skills")
     .update({
-      status: "verified",
-      verified: true,
+      verified: true,   // ✅ ONLY use this column
     })
     .eq("id", id);
+
+  if (error) {
+    console.error("Verify error:", error);
+    return;
+  }
 
   revalidatePath("/admin");
 }
 
 export async function rejectSkill(id: string) {
-  await supabase
+  const { error } = await supabase
     .from("user_skills")
-    .update({
-      status: "rejected",
-      verified: false,
-    })
+    .delete()           // ✅ cleaner than updating rejected
     .eq("id", id);
+
+  if (error) {
+    console.error("Reject error:", error);
+    return;
+  }
 
   revalidatePath("/admin");
 }

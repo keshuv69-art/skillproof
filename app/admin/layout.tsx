@@ -8,7 +8,6 @@ export default async function AdminLayout({
 }) {
   const supabase = await createSupabaseServer();
 
-  // 1️⃣ Get authenticated user (SECURE)
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -17,7 +16,6 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  // 2️⃣ Check admin role
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
@@ -29,8 +27,10 @@ export default async function AdminLayout({
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      {children}
-    </main>
+    <div className="min-h-screen bg-zinc-950 text-white">
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        {children}
+      </div>
+    </div>
   );
 }

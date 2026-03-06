@@ -1,38 +1,55 @@
-import { redirect } from "next/navigation";
-import { createSupabaseServer } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/admin";
 import { AdminSkillCard } from "@/components/AdminSkillCard";
 
-const ADMIN_EMAIL = "keshuv69@gmail.com";
+type RawSubmission = {
+  id: string;
+  user_id: string;
+  level: string;
+  proof_url: string | null;
+  verified: boolean;
+  skills: { name: string } | { name: string }[] | null;
+};
 
 export default async function AdminPage() {
-  const supabase = await createSupabaseServer();
+  const supabase = supabaseAdmin;
 
-  // 1️⃣ Get logged-in user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user || user.email !== ADMIN_EMAIL) {
-    redirect("/profile");
-  }
-
-  // 2️⃣ Load pending skill submissions
-  const { data: submissions } = await supabase
+  // 1️⃣ Get pending submissions (verified = false)
+  const { data: submissionsData, error } = await supabase
     .from("user_skills")
     .select(`
       id,
+      user_id,
       level,
       proof_url,
-      profiles (
-        email,
-        username
-      ),
+      verified,
       skills (
         name
       )
     `)
-    .eq("status", "pending")
-    .order("created_at", { ascending: true });
+    .eq("verified", false)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching submissions:", error);
+  }
+
+  const submissions: RawSubmission[] = submissionsData ?? [];
+
+  // 2️⃣ Fetch user profiles
+  const userIds = submissions.map((s) => s.user_id);
+
+  let profileMap = new Map<string, any>();
+
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, email, username")
+      .in("id", userIds);
+
+    profileMap = new Map(
+      (profiles ?? []).map((p) => [p.id, p])
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 text-white">
@@ -40,26 +57,38 @@ export default async function AdminPage() {
         Pending Skill Verifications
       </h1>
 
-      {(!submissions || submissions.length === 0) && (
+      {submissions.length === 0 && (
         <p className="text-zinc-400">
           No pending submissions 🎉
         </p>
       )}
 
       <div className="grid gap-4">
-        {submissions?.map((item) => (
-          <AdminSkillCard
-            key={item.id}
-            proof={{
-              id: item.id,
-              skill_name: item.skills?.[0]?.name ?? "Unknown skill",
-              level: item.level,
-              proof_url: item.proof_url,
-              user_email: item.profiles?.[0]?.email ?? "Unknown email",
-              username: item.profiles?.[0]?.username ?? "unknown",
-            }}
-          />
-        ))}
+        {submissions.map((item) => {
+          const profile = profileMap.get(item.user_id);
+
+          let skillName = "Unknown skill";
+
+          if (Array.isArray(item.skills)) {
+            skillName = item.skills[0]?.name ?? "Unknown skill";
+          } else if (item.skills && "name" in item.skills) {
+            skillName = item.skills.name;
+          }
+
+          return (
+            <AdminSkillCard
+              key={item.id}
+              proof={{
+                id: item.id,
+                skill_name: skillName,
+                level: item.level,
+                proof_url: item.proof_url,
+                user_email: profile?.email ?? "Unknown",
+                username: profile?.username ?? "unknown",
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );
