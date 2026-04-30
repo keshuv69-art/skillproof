@@ -20,11 +20,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geist.className} bg-zinc-950 text-white antialiased`}>
         <div className="min-h-screen flex flex-col">
-          
+
           {/* Navbar */}
           <header className="border-b border-zinc-800 bg-zinc-900/60 backdrop-blur">
             <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-              
+
               {/* Logo */}
               <a
                 href="/"
@@ -49,11 +49,12 @@ export default function RootLayout({
                   Admin
                 </a>
               </nav>
+
             </div>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1">
+          <main>
             {children}
           </main>
 
