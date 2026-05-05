@@ -47,7 +47,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
       skill_id: skillId,
       level,
       proof_url: proofUrl || null,
-      status: "pending", // ✅ FIXED (replaces verified)
+      status: "pending",
     });
 
     if (error) {
@@ -62,7 +62,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+    <div className="bg-zinc-900/60 backdrop-blur border border-zinc-800 rounded-2xl p-6">
       <h3 className="text-lg font-semibold text-white mb-6">
         Add a New Skill
       </h3>
@@ -78,7 +78,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
           <select
             value={skillId}
             onChange={(e) => setSkillId(e.target.value)}
-            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             <option value="" className="bg-zinc-800 text-white">
               Choose skill
@@ -105,7 +105,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
           <select
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             <option className="bg-zinc-800">Beginner</option>
             <option className="bg-zinc-800">Intermediate</option>
@@ -125,14 +125,14 @@ export function AddSkillCard({ userId }: { userId: string }) {
             placeholder="https://..."
             value={proofUrl}
             onChange={(e) => setProofUrl(e.target.value)}
-            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
 
         {/* Submit */}
         <button
           disabled={loading}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 transition rounded-xl py-3 font-medium disabled:opacity-50"
+          className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 transition rounded-xl py-3 font-medium disabled:opacity-50"
         >
           {loading ? "Submitting..." : "Submit for Verification"}
         </button>

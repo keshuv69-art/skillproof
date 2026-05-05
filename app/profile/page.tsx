@@ -70,10 +70,10 @@ export default async function ProfilePage() {
   });
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white relative overflow-hidden">
       
-      {/* 🔥 Background glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-purple-600/10 to-transparent blur-3xl opacity-30" />
+      {/* 🔥 Background glow (purple theme) */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-fuchsia-600/10 to-transparent blur-3xl opacity-30" />
 
       <div className="relative max-w-5xl mx-auto px-6 py-12">
         
@@ -85,7 +85,8 @@ export default async function ProfilePage() {
 
           <p className="text-zinc-400 mt-2">{profile?.email}</p>
 
-          <div className="mt-4 inline-block px-4 py-1 text-sm rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+          {/* ✅ FIXED badge (emerald, not default green) */}
+          <div className="mt-4 inline-block px-4 py-1 text-sm rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             ✔ Verified Skill Profile
           </div>
         </div>
@@ -111,7 +112,7 @@ export default async function ProfilePage() {
             {userSkills.map((skill) => {
               const statusStyles =
                 skill.status === "approved"
-                  ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                   : skill.status === "pending"
                   ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
                   : "bg-red-500/10 text-red-400 border border-red-500/20";
@@ -119,17 +120,17 @@ export default async function ProfilePage() {
               return (
                 <div
                   key={skill.id}
-                  className="group bg-zinc-900/60 backdrop-blur border border-zinc-800 hover:border-indigo-500/40 transition-all rounded-2xl p-6"
+                  className="group bg-zinc-900/60 backdrop-blur border border-zinc-800 hover:border-purple-500/40 transition-all rounded-2xl p-6"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-lg font-semibold group-hover:text-indigo-300 transition">
+                    <h3 className="text-lg font-semibold group-hover:text-purple-300 transition">
                       {skill.skillName}
                     </h3>
 
                     <span
-                      className={`text-xs px-3 py-1 rounded-full ${statusStyles}`}
+                      className={`text-xs px-3 py-1 rounded-full capitalize ${statusStyles}`}
                     >
-                      {skill.status}
+                      {skill.status === "approved" ? "verified" : skill.status}
                     </span>
                   </div>
 
@@ -142,7 +143,7 @@ export default async function ProfilePage() {
                       href={skill.proof_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-block mt-4 text-sm text-indigo-400 hover:text-indigo-300 transition"
+                      className="inline-block mt-4 text-sm text-purple-400 hover:text-purple-300 transition"
                     >
                       View proof →
                     </a>
