@@ -25,12 +25,15 @@ export default function RootLayout({
           <header className="border-b border-zinc-800 bg-zinc-900/60 backdrop-blur">
             <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
 
-              {/* Logo */}
+              {/* 🔥 Logo (FIXED) */}
               <a
                 href="/"
-                className="text-xl font-bold tracking-tight hover:opacity-80 transition"
+                className="text-xl font-semibold tracking-tight hover:opacity-80 transition"
               >
-                Skill<span className="text-indigo-500">Proof</span>
+                <span className="text-white">Skill</span>
+                <span className="bg-gradient-to-r from-purple-400 to-fuchsia-500 bg-clip-text text-transparent">
+                  Proof
+                </span>
               </a>
 
               {/* Nav */}
