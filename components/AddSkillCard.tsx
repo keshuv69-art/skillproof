@@ -22,7 +22,10 @@ export function AddSkillCard({ userId }: { userId: string }) {
         .select("id, name")
         .order("name");
 
-      if (error) console.error(error);
+      if (error) {
+        console.error("SKILLS FETCH ERROR:", JSON.stringify(error, null, 2));
+      }
+
       if (data) setSkills(data);
     };
 
@@ -44,11 +47,11 @@ export function AddSkillCard({ userId }: { userId: string }) {
       skill_id: skillId,
       level,
       proof_url: proofUrl || null,
-      verified: false,
+      status: "pending", // ✅ FIXED (replaces verified)
     });
 
     if (error) {
-      console.error(error);
+      console.error("INSERT ERROR:", JSON.stringify(error, null, 2));
       alert("Insert failed. Check console.");
     } else {
       alert("Skill submitted!");

@@ -13,11 +13,12 @@ export default async function PublicProfile({
 }: {
   params: Promise<{ username: string }>;
 }) {
-  // ✅ unwrap params (required in your Next version)
+  // ✅ unwrap params
   const { username } = await params;
 
   const supabase = await createSupabaseServer();
 
+  // 🔥 Get profile
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, username")
@@ -28,6 +29,7 @@ export default async function PublicProfile({
     return notFound();
   }
 
+  // 🔥 Get ONLY approved skills
   const { data: skillsData } = await supabase
     .from("user_skills")
     .select(`
@@ -36,13 +38,15 @@ export default async function PublicProfile({
       skills ( name )
     `)
     .eq("user_id", profile.id)
-    .eq("status", "verified");
+    .eq("status", "approved"); // ✅ FIXED
 
   const skills: SkillRow[] = skillsData ?? [];
 
   return (
     <main className="min-h-screen bg-black text-white">
       <div className="max-w-3xl mx-auto px-6 py-16">
+
+        {/* HEADER */}
         <div className="mb-12 border-b border-zinc-800 pb-8">
           <h1 className="text-4xl font-bold">
             @{profile.username}
@@ -60,6 +64,7 @@ export default async function PublicProfile({
           </p>
         </div>
 
+        {/* SKILLS */}
         <h2 className="text-xl font-semibold mb-6">
           Verified Skills
         </h2>

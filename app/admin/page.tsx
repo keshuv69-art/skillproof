@@ -1,19 +1,36 @@
 import { supabaseAdmin } from "@/lib/admin";
+import { createSupabaseServer } from "@/lib/supabaseServer";
 import { AdminSkillCard } from "@/components/AdminSkillCard";
+import { redirect } from "next/navigation";
 
 type RawSubmission = {
   id: string;
   user_id: string;
   level: string;
   proof_url: string | null;
-  verified: boolean;
+  status: string;
   skills: { name: string } | { name: string }[] | null;
 };
 
 export default async function AdminPage() {
+  // 🔐 AUTH CHECK (real user)
+  const supabaseUser = await createSupabaseServer();
+
+  const {
+    data: { user },
+  } = await supabaseUser.auth.getUser();
+
+  // 🔴 CHANGE THIS TO YOUR EMAIL
+  const ADMIN_EMAIL = "keshuv69@gmail.com";
+
+  if (!user || user.email !== ADMIN_EMAIL) {
+    redirect("/");
+  }
+
+  // 🔥 ADMIN CLIENT (bypasses RLS)
   const supabase = supabaseAdmin;
 
-  // 1️⃣ Get pending submissions (verified = false)
+  // 🔥 Get pending submissions
   const { data: submissionsData, error } = await supabase
     .from("user_skills")
     .select(`
@@ -21,12 +38,12 @@ export default async function AdminPage() {
       user_id,
       level,
       proof_url,
-      verified,
+      status,
       skills (
         name
       )
     `)
-    .eq("verified", false)
+    .eq("status", "pending")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -35,7 +52,7 @@ export default async function AdminPage() {
 
   const submissions: RawSubmission[] = submissionsData ?? [];
 
-  // 2️⃣ Fetch user profiles
+  // 🔥 Fetch user profiles
   const userIds = submissions.map((s) => s.user_id);
 
   let profileMap = new Map<string, any>();

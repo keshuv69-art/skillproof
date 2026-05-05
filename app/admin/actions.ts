@@ -8,30 +8,34 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// ✅ VERIFY SKILL
 export async function verifySkill(id: string) {
   const { error } = await supabase
     .from("user_skills")
     .update({
-      verified: true,   // ✅ ONLY use this column
+      status: "verified", // ✅ FIXED
     })
     .eq("id", id);
 
   if (error) {
-    console.error("Verify error:", error);
+    console.error("Verify error:", JSON.stringify(error, null, 2));
     return;
   }
 
   revalidatePath("/admin");
 }
 
+// ❌ REJECT SKILL
 export async function rejectSkill(id: string) {
   const { error } = await supabase
     .from("user_skills")
-    .delete()           // ✅ cleaner than updating rejected
+    .update({
+      status: "rejected",
+    })
     .eq("id", id);
 
   if (error) {
-    console.error("Reject error:", error);
+    console.error("Reject error:", JSON.stringify(error, null, 2));
     return;
   }
 

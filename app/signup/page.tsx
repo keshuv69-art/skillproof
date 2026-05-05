@@ -18,7 +18,7 @@ export default function Signup() {
     setLoading(true);
     setMessage("");
 
-    // 🔴 Basic validation
+    // ✅ Validate username
     if (!username.trim()) {
       setMessage("Username is required");
       setLoading(false);
@@ -27,18 +27,12 @@ export default function Signup() {
 
     const cleanUsername = username.toLowerCase().trim();
 
-    // 🔴 Check if username exists (safe version)
-    const { data: existingUser, error: usernameError } = await supabase
+    // ✅ Check username availability
+    const { data: existingUser } = await supabase
       .from("profiles")
       .select("id")
       .eq("username", cleanUsername)
       .maybeSingle();
-
-    if (usernameError) {
-      setMessage("Error checking username");
-      setLoading(false);
-      return;
-    }
 
     if (existingUser) {
       setMessage("Username already taken");
@@ -52,40 +46,54 @@ export default function Signup() {
       password,
     });
 
-    if (error) {
+    // 🔴 Handle real auth errors
+    if (error && !data?.user) {
       setMessage(error.message);
       setLoading(false);
       return;
     }
 
-    // ⚠️ Safety check
-    if (!data.user) {
-      setMessage("Signup failed. Try again.");
+    const user = data?.user;
+
+    if (!user) {
+      setMessage("Something went wrong. Try again.");
       setLoading(false);
       return;
     }
 
-    // ✅ Insert profile
-    const { error: profileError } = await supabase
+    // ✅ Insert profile ONLY if it doesn't exist
+    const { data: existingProfile } = await supabase
       .from("profiles")
-      .insert([
-        {
-          id: data.user.id,
-          email: data.user.email,
-          username: cleanUsername,
-        },
-      ]);
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
 
-    if (profileError) {
-      setMessage(profileError.message);
-      setLoading(false);
-      return;
+    if (!existingProfile) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert([
+          {
+            id: user.id,
+            email: user.email,
+            username: cleanUsername,
+          },
+        ]);
+
+      // ⚠️ Ignore duplicate errors safely
+      if (profileError && !profileError.message.includes("duplicate")) {
+        setMessage(profileError.message);
+        setLoading(false);
+        return;
+      }
     }
 
-    setMessage("✅ Account created!");
+    // ✅ Success (even if Supabase says "already registered")
+    setMessage("✅ Account ready! You can log in now.");
     setLoading(false);
 
-    router.push("/login");
+    setTimeout(() => {
+      router.push("/login");
+    }, 1000);
   };
 
   return (
