@@ -72,21 +72,25 @@ export default async function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white relative overflow-hidden">
       
-      {/* 🌌 Midnight Purple Glow */}
+      {/* 🌌 Midnight Glow */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 via-indigo-700/10 to-transparent blur-3xl opacity-30" />
 
       <div className="relative max-w-5xl mx-auto px-6 py-12">
         
         {/* HEADER */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold tracking-tight">
+        <div className="mb-12 relative">
+          {/* subtle glow blob */}
+          <div className="absolute -top-10 left-0 w-72 h-72 bg-indigo-600/20 blur-3xl rounded-full" />
+
+          <h1 className="text-4xl font-bold tracking-tight relative">
             @{profile?.username ?? "profile"}
           </h1>
 
-          <p className="text-zinc-400 mt-2">{profile?.email}</p>
+          <p className="text-zinc-400 mt-2 relative">
+            {profile?.email}
+          </p>
 
-          {/* ✅ Clean Verified Badge */}
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-1 text-sm rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-1 text-sm rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 relative">
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
             Verified Skill Profile
           </div>
@@ -122,7 +126,7 @@ export default async function ProfilePage() {
               return (
                 <div
                   key={skill.id}
-                  className="group bg-zinc-900/60 backdrop-blur border border-zinc-800 hover:border-indigo-500/40 transition-all rounded-2xl p-6"
+                  className="group bg-zinc-900/60 backdrop-blur border border-zinc-800 hover:border-indigo-500/40 hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] hover:-translate-y-1 transition-all duration-300 rounded-2xl p-6"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-lg font-semibold group-hover:text-indigo-300 transition">

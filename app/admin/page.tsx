@@ -13,14 +13,13 @@ type RawSubmission = {
 };
 
 export default async function AdminPage() {
-  // 🔐 AUTH CHECK (real user)
+  // 🔐 AUTH CHECK
   const supabaseUser = await createSupabaseServer();
 
   const {
     data: { user },
   } = await supabaseUser.auth.getUser();
 
-  // 🔴 CHANGE THIS TO YOUR EMAIL
   const ADMIN_EMAIL = "keshuv69@gmail.com";
 
   if (!user || user.email !== ADMIN_EMAIL) {
@@ -30,7 +29,7 @@ export default async function AdminPage() {
   // 🔥 ADMIN CLIENT (bypasses RLS)
   const supabase = supabaseAdmin;
 
-  // 🔥 Get pending submissions
+  // 📦 Fetch pending submissions
   const { data: submissionsData, error } = await supabase
     .from("user_skills")
     .select(`
@@ -47,12 +46,12 @@ export default async function AdminPage() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching submissions:", error);
+    console.error("ADMIN FETCH ERROR:", JSON.stringify(error, null, 2));
   }
 
   const submissions: RawSubmission[] = submissionsData ?? [];
 
-  // 🔥 Fetch user profiles
+  // 👤 Fetch user profiles
   const userIds = submissions.map((s) => s.user_id);
 
   let profileMap = new Map<string, any>();
@@ -63,49 +62,63 @@ export default async function AdminPage() {
       .select("id, email, username")
       .in("id", userIds);
 
-    profileMap = new Map(
-      (profiles ?? []).map((p) => [p.id, p])
-    );
+    profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 text-white">
-      <h1 className="text-3xl font-bold mb-6">
-        Pending Skill Verifications
-      </h1>
+    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white relative overflow-hidden">
+      
+      {/* 🌌 Background glow (midnight purple) */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-violet-600/10 to-transparent blur-3xl opacity-30" />
 
-      {submissions.length === 0 && (
-        <p className="text-zinc-400">
-          No pending submissions 🎉
-        </p>
-      )}
+      <div className="relative max-w-6xl mx-auto px-6 py-12">
+        
+        {/* HEADER */}
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Admin Dashboard
+          </h1>
 
-      <div className="grid gap-4">
-        {submissions.map((item) => {
-          const profile = profileMap.get(item.user_id);
+          <p className="text-zinc-400 mt-2">
+            Review and verify submitted skills
+          </p>
+        </div>
 
-          let skillName = "Unknown skill";
+        {/* EMPTY STATE */}
+        {submissions.length === 0 && (
+          <div className="bg-zinc-900/70 backdrop-blur border border-zinc-800 rounded-2xl p-6 text-zinc-400">
+            No pending submissions 🎉
+          </div>
+        )}
 
-          if (Array.isArray(item.skills)) {
-            skillName = item.skills[0]?.name ?? "Unknown skill";
-          } else if (item.skills && "name" in item.skills) {
-            skillName = item.skills.name;
-          }
+        {/* GRID */}
+        <div className="grid gap-5 sm:grid-cols-2">
+          {submissions.map((item) => {
+            const profile = profileMap.get(item.user_id);
 
-          return (
-            <AdminSkillCard
-              key={item.id}
-              proof={{
-                id: item.id,
-                skill_name: skillName,
-                level: item.level,
-                proof_url: item.proof_url,
-                user_email: profile?.email ?? "Unknown",
-                username: profile?.username ?? "unknown",
-              }}
-            />
-          );
-        })}
+            let skillName = "Unknown skill";
+
+            if (Array.isArray(item.skills)) {
+              skillName = item.skills[0]?.name ?? "Unknown skill";
+            } else if (item.skills && "name" in item.skills) {
+              skillName = item.skills.name;
+            }
+
+            return (
+              <AdminSkillCard
+                key={item.id}
+                proof={{
+                  id: item.id,
+                  skill_name: skillName,
+                  level: item.level,
+                  proof_url: item.proof_url,
+                  user_email: profile?.email ?? "Unknown",
+                  username: profile?.username ?? "unknown",
+                }}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );

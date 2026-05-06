@@ -7,16 +7,16 @@ export function AdminSkillCard({ proof }: { proof: any }) {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <div className="rounded-xl border border-zinc-700 p-4 bg-zinc-900">
+    <div className="group rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur p-5 hover:border-purple-500/40 transition-all">
       
       {/* HEADER */}
       <div className="flex justify-between items-start">
         <div>
-          <p className="font-semibold text-white">
+          <p className="font-semibold text-white text-lg group-hover:text-purple-300 transition">
             {proof.skill_name}
           </p>
 
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-zinc-400 mt-1">
             @{proof.username}
           </p>
 
@@ -25,21 +25,21 @@ export function AdminSkillCard({ proof }: { proof: any }) {
           </p>
         </div>
 
-        <span className="text-xs px-2 py-1 rounded bg-yellow-500/10 text-yellow-400">
-          Pending
+        <span className="text-xs px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+          pending
         </span>
       </div>
 
-      {/* PROOF LINK */}
-      <div className="mt-3">
+      {/* PROOF */}
+      <div className="mt-4">
         {proof.proof_url ? (
           <a
             href={proof.proof_url}
             target="_blank"
             rel="noreferrer"
-            className="text-blue-400 underline text-sm"
+            className="text-purple-400 hover:text-purple-300 text-sm transition"
           >
-            View Proof
+            View proof →
           </a>
         ) : (
           <p className="text-sm text-zinc-500">
@@ -49,13 +49,13 @@ export function AdminSkillCard({ proof }: { proof: any }) {
       </div>
 
       {/* ACTIONS */}
-      <div className="mt-4 flex gap-2">
+      <div className="mt-5 flex gap-3">
         <button
           disabled={isPending}
           onClick={() =>
-            startTransition(() => verifySkill(proof.id)) // ✅ FIXED
+            startTransition(() => verifySkill(proof.id))
           }
-          className="px-3 py-1 rounded bg-green-600 text-white disabled:opacity-50 hover:bg-green-500 transition"
+          className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm transition disabled:opacity-50"
         >
           Verify
         </button>
@@ -65,7 +65,7 @@ export function AdminSkillCard({ proof }: { proof: any }) {
           onClick={() =>
             startTransition(() => rejectSkill(proof.id))
           }
-          className="px-3 py-1 rounded bg-red-600 text-white disabled:opacity-50 hover:bg-red-500 transition"
+          className="px-4 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm transition disabled:opacity-50"
         >
           Reject
         </button>
