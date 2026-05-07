@@ -87,7 +87,7 @@ export default function Signup() {
       }
     }
 
-    // ✅ Success (even if Supabase says "already registered")
+    // ✅ Success
     setMessage("✅ Account ready! You can log in now.");
     setLoading(false);
 
@@ -97,15 +97,26 @@ export default function Signup() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-black text-white">
-      <div className="w-full max-w-md border border-gray-700 rounded-xl p-6">
-        <h1 className="text-3xl font-bold mb-6 text-center">Sign Up</h1>
+    <main className="min-h-screen flex items-center justify-center bg-black text-white px-6">
+      <div className="w-full max-w-md border border-zinc-800 bg-zinc-900/50 backdrop-blur rounded-2xl p-8 shadow-2xl">
+
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold tracking-tight">
+            Create Account
+          </h1>
+
+          <p className="text-zinc-400 mt-3 text-sm">
+            Build your verified skill identity.
+          </p>
+        </div>
 
         {/* Username */}
         <input
           type="text"
           placeholder="Username"
-          className="w-full mb-4 px-4 py-2 rounded bg-black text-white border border-gray-700"
+          autoComplete="username"
+          className="w-full mb-4 px-4 py-3 rounded-xl bg-zinc-950 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
@@ -114,7 +125,8 @@ export default function Signup() {
         <input
           type="email"
           placeholder="Email"
-          className="w-full mb-4 px-4 py-2 rounded bg-black text-white border border-gray-700"
+          autoComplete="email"
+          className="w-full mb-4 px-4 py-3 rounded-xl bg-zinc-950 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -123,24 +135,28 @@ export default function Signup() {
         <input
           type="password"
           placeholder="Password"
-          className="w-full mb-4 px-4 py-2 rounded bg-black text-white border border-gray-700"
+          autoComplete="new-password"
+          className="w-full mb-4 px-4 py-3 rounded-xl bg-zinc-950 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
+        {/* Button */}
         <button
           onClick={handleSignup}
           disabled={loading}
-          className="w-full py-2 rounded bg-white text-black font-semibold"
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 transition font-semibold disabled:opacity-50"
         >
-          {loading ? "Creating account..." : "Sign Up"}
+          {loading ? "Creating account..." : "Create Account"}
         </button>
 
+        {/* Message */}
         {message && (
-          <p className="mt-4 text-center text-sm text-gray-300">
+          <p className="mt-4 text-center text-sm text-zinc-300">
             {message}
           </p>
         )}
+
       </div>
     </main>
   );
