@@ -6,56 +6,105 @@ import { supabase } from "@/lib/supabase";
 
 export default function Login() {
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
       setError(error.message);
-    } else {
-      router.push("/profile");
+      setLoading(false);
+      return;
     }
+
+    const user = data.user;
+
+    if (!user) {
+      setError("Something went wrong");
+      setLoading(false);
+      return;
+    }
+
+    // Check profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    // No username → onboarding
+    if (!profile?.username) {
+      router.push("/setup-profile");
+      return;
+    }
+
+    // Existing user
+    router.push("/profile");
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-black text-white">
-      <div className="border rounded-xl p-6 w-80">
-        <h1 className="text-2xl font-bold mb-4">Log In</h1>
+    <main className="min-h-screen bg-black text-white flex items-center justify-center px-6">
+      <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-3 px-3 py-2 rounded bg-black border text-white"
-        />
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold tracking-tight">
+            Welcome Back
+          </h1>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-3 px-3 py-2 rounded bg-black border text-white"
-        />
+          <p className="text-zinc-400 mt-4">
+            Log into your SkillProof account.
+          </p>
+        </div>
 
-        {error && (
-          <p className="text-red-400 text-sm mb-2">{error}</p>
-        )}
+        <div className="space-y-4">
 
-        <button
-          onClick={handleLogin}
-          className="w-full bg-white text-black py-2 rounded hover:bg-gray-200"
-        >
-          Log In
-        </button>
+          {/* EMAIL */}
+          <input
+            type="email"
+            autoComplete="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-2xl bg-zinc-900 border border-zinc-700 px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+
+          {/* PASSWORD */}
+          <input
+            type="password"
+            autoComplete="current-password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-2xl bg-zinc-900 border border-zinc-700 px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+
+          {error && (
+            <p className="text-sm text-red-400">
+              {error}
+            </p>
+          )}
+
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-fuchsia-600 py-4 font-semibold text-white hover:opacity-90 transition disabled:opacity-50"
+          >
+            {loading ? "Logging in..." : "Log In"}
+          </button>
+
+        </div>
+
       </div>
     </main>
   );

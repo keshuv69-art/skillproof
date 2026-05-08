@@ -9,7 +9,6 @@ export default function Signup() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -18,144 +17,106 @@ export default function Signup() {
     setLoading(true);
     setMessage("");
 
-    // ✅ Validate username
-    if (!username.trim()) {
-      setMessage("Username is required");
-      setLoading(false);
-      return;
-    }
-
-    const cleanUsername = username.toLowerCase().trim();
-
-    // ✅ Check username availability
-    const { data: existingUser } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("username", cleanUsername)
-      .maybeSingle();
-
-    if (existingUser) {
-      setMessage("Username already taken");
-      setLoading(false);
-      return;
-    }
-
-    // ✅ Create auth user
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
 
-    // 🔴 Handle real auth errors
-    if (error && !data?.user) {
+    if (error) {
       setMessage(error.message);
       setLoading(false);
       return;
     }
 
-    const user = data?.user;
-
-    if (!user) {
-      setMessage("Something went wrong. Try again.");
+    if (!data.user) {
+      setMessage("Something went wrong.");
       setLoading(false);
       return;
     }
 
-    // ✅ Insert profile ONLY if it doesn't exist
-    const { data: existingProfile } = await supabase
+    // Create minimal profile
+    const { error: profileError } = await supabase
       .from("profiles")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle();
+      .insert([
+        {
+          id: data.user.id,
+          email: data.user.email,
+        },
+      ]);
 
-    if (!existingProfile) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert([
-          {
-            id: user.id,
-            email: user.email,
-            username: cleanUsername,
-          },
-        ]);
-
-      // ⚠️ Ignore duplicate errors safely
-      if (profileError && !profileError.message.includes("duplicate")) {
-        setMessage(profileError.message);
-        setLoading(false);
-        return;
-      }
+    if (
+      profileError &&
+      !profileError.message.toLowerCase().includes("duplicate")
+    ) {
+      setMessage(profileError.message);
+      setLoading(false);
+      return;
     }
 
-    // ✅ Success
-    setMessage("✅ Account ready! You can log in now.");
-    setLoading(false);
+    setMessage("✅ Account created!");
 
     setTimeout(() => {
       router.push("/login");
     }, 1000);
+
+    setLoading(false);
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-black text-white px-6">
-      <div className="w-full max-w-md border border-zinc-800 bg-zinc-900/50 backdrop-blur rounded-2xl p-8 shadow-2xl">
+    <main className="min-h-screen bg-black text-white flex items-center justify-center px-6">
+      <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
 
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold tracking-tight">
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold tracking-tight">
             Create Account
           </h1>
 
-          <p className="text-zinc-400 mt-3 text-sm">
+          <p className="text-zinc-400 mt-4">
             Build your verified skill identity.
           </p>
         </div>
 
-        {/* Username */}
-        <input
-          type="text"
-          placeholder="Username"
-          autoComplete="username"
-          className="w-full mb-4 px-4 py-3 rounded-xl bg-zinc-950 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+        <div className="space-y-4">
 
-        {/* Email */}
-        <input
-          type="email"
-          placeholder="Email"
-          autoComplete="email"
-          className="w-full mb-4 px-4 py-3 rounded-xl bg-zinc-950 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+          {/* EMAIL */}
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-2xl bg-zinc-900 border border-zinc-700 px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
 
-        {/* Password */}
-        <input
-          type="password"
-          placeholder="Password"
-          autoComplete="new-password"
-          className="w-full mb-4 px-4 py-3 rounded-xl bg-zinc-950 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          {/* PASSWORD */}
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-2xl bg-zinc-900 border border-zinc-700 px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
 
-        {/* Button */}
-        <button
-          onClick={handleSignup}
-          disabled={loading}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 transition font-semibold disabled:opacity-50"
-        >
-          {loading ? "Creating account..." : "Create Account"}
-        </button>
+          <button
+            onClick={handleSignup}
+            disabled={loading}
+            className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-fuchsia-600 py-4 font-semibold text-white hover:opacity-90 transition disabled:opacity-50"
+          >
+            {loading ? "Creating account..." : "Create Account"}
+          </button>
 
-        {/* Message */}
-        {message && (
-          <p className="mt-4 text-center text-sm text-zinc-300">
-            {message}
-          </p>
-        )}
+          {message && (
+            <p className="text-center text-sm text-zinc-400 pt-2">
+              {message}
+            </p>
+          )}
+
+        </div>
 
       </div>
     </main>
