@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { AddSkillCard } from "@/components/AddSkillCard";
+import LogoutButton from "@/components/LogoutButton";
 
 type RawUserSkill = {
   id: string;
@@ -78,21 +79,29 @@ export default async function ProfilePage() {
       <div className="relative max-w-5xl mx-auto px-6 py-12">
         
         {/* HEADER */}
-        <div className="mb-12 relative">
-          {/* subtle glow blob */}
-          <div className="absolute -top-10 left-0 w-72 h-72 bg-indigo-600/20 blur-3xl rounded-full" />
+        <div className="mb-12 relative flex items-start justify-between gap-6">
+          
+          <div>
+            {/* subtle glow blob */}
+            <div className="absolute -top-10 left-0 w-72 h-72 bg-indigo-600/20 blur-3xl rounded-full" />
 
-          <h1 className="text-4xl font-bold tracking-tight relative">
-            @{profile?.username ?? "profile"}
-          </h1>
+            <h1 className="text-4xl font-bold tracking-tight relative">
+              @{profile?.username ?? "profile"}
+            </h1>
 
-          <p className="text-zinc-400 mt-2 relative">
-            {profile?.email}
-          </p>
+            <p className="text-zinc-400 mt-2 relative">
+              {profile?.email}
+            </p>
 
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-1 text-sm rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 relative">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            Verified Skill Profile
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-1 text-sm rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 relative">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Verified Skill Profile
+            </div>
+          </div>
+
+          {/* LOGOUT BUTTON */}
+          <div className="relative z-10">
+            <LogoutButton />
           </div>
         </div>
 
