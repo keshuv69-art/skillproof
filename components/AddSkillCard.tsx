@@ -12,8 +12,15 @@ export function AddSkillCard({ userId }: { userId: string }) {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [skillId, setSkillId] = useState("");
   const [level, setLevel] = useState("Beginner");
+
+  // 🔥 FILE STATE
+  const [file, setFile] = useState<File | null>(null);
+
+  // 🔥 FINAL URL STORED IN DB
   const [proofUrl, setProofUrl] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -23,7 +30,10 @@ export function AddSkillCard({ userId }: { userId: string }) {
         .order("name");
 
       if (error) {
-        console.error("SKILLS FETCH ERROR:", JSON.stringify(error, null, 2));
+        console.error(
+          "SKILLS FETCH ERROR:",
+          JSON.stringify(error, null, 2)
+        );
       }
 
       if (data) setSkills(data);
@@ -32,6 +42,49 @@ export function AddSkillCard({ userId }: { userId: string }) {
     fetchSkills();
   }, []);
 
+  // 🔥 FILE UPLOAD
+  const handleFileUpload = async (selectedFile: File) => {
+    try {
+      setUploading(true);
+
+      const fileExt = selectedFile.name.split(".").pop();
+
+      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+
+      const filePath = `proofs/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from("proofs")
+        .upload(filePath, selectedFile);
+
+      if (uploadError) {
+        console.error(
+          "UPLOAD ERROR:",
+          JSON.stringify(uploadError, null, 2)
+        );
+
+        alert("File upload failed.");
+        return;
+      }
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from("proofs")
+        .getPublicUrl(filePath);
+
+      setProofUrl(data.publicUrl);
+
+      alert("Proof uploaded successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong uploading file.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // 🔥 SUBMIT SKILL
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -54,7 +107,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
       console.error("INSERT ERROR:", JSON.stringify(error, null, 2));
       alert("Insert failed. Check console.");
     } else {
-      alert("Skill submitted!");
+      alert("Skill submitted for verification!");
       window.location.reload();
     }
 
@@ -63,14 +116,14 @@ export function AddSkillCard({ userId }: { userId: string }) {
 
   return (
     <div className="bg-zinc-900/60 backdrop-blur border border-zinc-800 rounded-2xl p-6 hover:border-indigo-500/40 transition-all duration-300">
-      
+
       <h3 className="text-lg font-semibold text-white mb-6">
         Add a New Skill
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-5">
 
-        {/* Skill Select */}
+        {/* SKILL */}
         <div>
           <label className="block text-sm text-zinc-400 mb-2">
             Skill
@@ -81,7 +134,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
             onChange={(e) => setSkillId(e.target.value)}
             className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           >
-            <option value="" className="bg-zinc-800 text-white">
+            <option value="">
               Choose skill
             </option>
 
@@ -89,7 +142,6 @@ export function AddSkillCard({ userId }: { userId: string }) {
               <option
                 key={skill.id}
                 value={skill.id}
-                className="bg-zinc-800 text-white"
               >
                 {skill.name}
               </option>
@@ -97,7 +149,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
           </select>
         </div>
 
-        {/* Level */}
+        {/* LEVEL */}
         <div>
           <label className="block text-sm text-zinc-400 mb-2">
             Level
@@ -108,34 +160,71 @@ export function AddSkillCard({ userId }: { userId: string }) {
             onChange={(e) => setLevel(e.target.value)}
             className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           >
-            <option className="bg-zinc-800">Beginner</option>
-            <option className="bg-zinc-800">Intermediate</option>
-            <option className="bg-zinc-800">Advanced</option>
-            <option className="bg-zinc-800">Expert</option>
+            <option>Beginner</option>
+            <option>Intermediate</option>
+            <option>Advanced</option>
+            <option>Expert</option>
           </select>
         </div>
 
-        {/* Proof */}
+        {/* FILE UPLOAD */}
         <div>
           <label className="block text-sm text-zinc-400 mb-2">
-            Proof URL
+            Upload Proof
           </label>
 
-          <input
-            type="text"
-            placeholder="https://..."
-            value={proofUrl}
-            onChange={(e) => setProofUrl(e.target.value)}
-            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-          />
+          <div className="border border-dashed border-zinc-700 rounded-2xl p-6 bg-zinc-800/40">
+
+            <input
+              type="file"
+              accept=".pdf,.png,.jpg,.jpeg"
+              onChange={async (e) => {
+                const selectedFile = e.target.files?.[0];
+
+                if (!selectedFile) return;
+
+                setFile(selectedFile);
+
+                await handleFileUpload(selectedFile);
+              }}
+              className="block w-full text-sm text-zinc-300 file:mr-4 file:px-4 file:py-2 file:rounded-xl file:border-0 file:bg-indigo-500/20 file:text-indigo-300 hover:file:bg-indigo-500/30"
+            />
+
+            <p className="text-xs text-zinc-500 mt-3">
+              Supported formats: PDF, PNG, JPG
+            </p>
+
+            {file && (
+              <div className="mt-4 text-sm text-zinc-300">
+                Selected: {file.name}
+              </div>
+            )}
+
+            {uploading && (
+              <div className="mt-4 text-indigo-400 text-sm">
+                Uploading proof...
+              </div>
+            )}
+
+            {!uploading && proofUrl && (
+              <div className="mt-4 text-emerald-400 text-sm">
+                Proof uploaded successfully ✓
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Submit */}
+        {/* SUBMIT */}
         <button
-          disabled={loading}
+          type="submit"
+          disabled={loading || uploading}
           className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 transition-all duration-300 rounded-xl py-3 font-medium disabled:opacity-50 hover:shadow-[0_0_20px_rgba(99,102,241,0.25)]"
         >
-          {loading ? "Submitting..." : "Submit for Verification"}
+          {uploading
+            ? "Uploading..."
+            : loading
+            ? "Submitting..."
+            : "Submit for Verification"}
         </button>
 
       </form>

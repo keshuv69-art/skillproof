@@ -184,7 +184,7 @@ export default async function PublicProfile({
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between mt-6">
+                    <div className="mt-6">
 
                       <div>
                         <p className="text-xs uppercase tracking-wider text-zinc-500">
@@ -196,16 +196,53 @@ export default async function PublicProfile({
                         </p>
                       </div>
 
+                      {/* PROOF PREVIEW */}
                       {item.proof_url && (
-                        <a
-                          href={item.proof_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 transition"
-                        >
-                          View Proof →
-                        </a>
+                        <div className="mt-6">
+
+                          <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/30">
+
+                            {/* IMAGE PREVIEW */}
+                            {item.proof_url.match(/\.(jpeg|jpg|png|gif|webp)$/i) ? (
+                              <img
+                                src={item.proof_url}
+                                alt="Skill proof"
+                                className="w-full h-48 object-cover"
+                              />
+                            ) : (
+                              <div className="h-40 flex items-center justify-center text-zinc-500 text-sm bg-zinc-900/50">
+                                External Proof Document
+                              </div>
+                            )}
+
+                            {/* FOOTER */}
+                            <div className="p-4 border-t border-white/10 flex items-center justify-between">
+
+                              <div>
+                                <p className="text-sm font-medium">
+                                  Verification Proof
+                                </p>
+
+                                <p className="text-xs text-zinc-500 mt-1">
+                                  Submitted evidence for this skill
+                                </p>
+                              </div>
+
+                              <a
+                                href={item.proof_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 transition"
+                              >
+                                Open
+                              </a>
+
+                            </div>
+                          </div>
+
+                        </div>
                       )}
+
                     </div>
 
                   </div>
