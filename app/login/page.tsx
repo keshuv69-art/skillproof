@@ -14,43 +14,62 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    setLoading(true);
-    setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+      const { data, error } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      const user = data.user;
+
+      if (!user) {
+        setError("Something went wrong");
+        return;
+      }
+
+      // IMPORTANT:
+      // Give Supabase auth cookie time to sync
+      await supabase.auth.getSession();
+
+      // Check profile
+      const { data: profile, error: profileError } =
+        await supabase
+          .from("profiles")
+          .select("username")
+          .eq("id", user.id)
+          .maybeSingle();
+
+      if (profileError) {
+        setError(profileError.message);
+        return;
+      }
+
+      // Refresh router before navigation
+      router.refresh();
+
+      // No username -> onboarding
+      if (!profile?.username) {
+        router.push("/setup-profile");
+        return;
+      }
+
+      // Existing user
+      router.push("/profile");
+    } catch (err) {
+      setError("Unexpected error occurred");
+      console.error(err);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const user = data.user;
-
-    if (!user) {
-      setError("Something went wrong");
-      setLoading(false);
-      return;
-    }
-
-    // Check profile
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    // No username → onboarding
-    if (!profile?.username) {
-      router.push("/setup-profile");
-      return;
-    }
-
-    // Existing user
-    router.push("/profile");
   };
 
   return (

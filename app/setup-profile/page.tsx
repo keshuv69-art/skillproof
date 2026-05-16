@@ -14,6 +14,71 @@ export default function SetupProfilePage() {
 
   useEffect(() => {
     const loadUser = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+
+        // Check existing profile
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username, bio")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        // If already setup -> profile
+        if (
+          profile?.username &&
+          profile.username !== user.email?.split("@")[0]
+        ) {
+          router.push("/profile");
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadUser();
+  }, [router]);
+
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const cleanUsername = username
+        .toLowerCase()
+        .trim();
+
+      if (!cleanUsername) {
+        setMessage("Username is required");
+        return;
+      }
+
+      // Username validation
+      const usernameRegex = /^[a-z0-9_]+$/;
+
+      if (!usernameRegex.test(cleanUsername)) {
+        setMessage(
+          "Username can only contain lowercase letters, numbers, and underscores"
+        );
+        return;
+      }
+
+      if (cleanUsername.length < 3) {
+        setMessage(
+          "Username must be at least 3 characters"
+        );
+        return;
+      }
+
+      // Get current user
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -23,91 +88,44 @@ export default function SetupProfilePage() {
         return;
       }
 
-      // Check existing profile
-      const { data: profile } = await supabase
+      // Check availability
+      const { data: existingUser } = await supabase
         .from("profiles")
-        .select("username, bio")
-        .eq("id", user.id)
+        .select("id")
+        .eq("username", cleanUsername)
+        .neq("id", user.id)
         .maybeSingle();
 
-      // If already setup, go to profile
-      if (profile?.username) {
-        router.push("/profile");
+      if (existingUser) {
+        setMessage("Username already taken");
         return;
       }
-    };
 
-    loadUser();
-  }, [router]);
+      // Update profile
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          username: cleanUsername,
+          bio: bio.trim() || null,
+        })
+        .eq("id", user.id);
 
-  const handleSave = async () => {
-    setLoading(true);
-    setMessage("");
+      if (error) {
+        setMessage(error.message);
+        return;
+      }
 
-    const cleanUsername = username.toLowerCase().trim();
+      // Refresh auth/session state
+      await supabase.auth.getSession();
 
-    if (!cleanUsername) {
-      setMessage("Username is required");
+      router.refresh();
+      router.push("/profile");
+    } catch (err) {
+      console.error(err);
+      setMessage("Something went wrong");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // Username format validation
-    const usernameRegex = /^[a-z0-9_]+$/;
-
-    if (!usernameRegex.test(cleanUsername)) {
-      setMessage(
-        "Username can only contain lowercase letters, numbers, and underscores"
-      );
-      setLoading(false);
-      return;
-    }
-
-    if (cleanUsername.length < 3) {
-      setMessage("Username must be at least 3 characters");
-      setLoading(false);
-      return;
-    }
-
-    // Check availability
-    const { data: existingUser } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("username", cleanUsername)
-      .maybeSingle();
-
-    if (existingUser) {
-      setMessage("Username already taken");
-      setLoading(false);
-      return;
-    }
-
-    // Get current user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-
-    // Update profile
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        username: cleanUsername,
-        bio: bio.trim() || null,
-      })
-      .eq("id", user.id);
-
-    if (error) {
-      setMessage(error.message);
-      setLoading(false);
-      return;
-    }
-
-    router.push("/profile");
   };
 
   return (
@@ -159,7 +177,9 @@ export default function SetupProfilePage() {
                 autoCapitalize="none"
                 placeholder="yourname"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) =>
+                  setUsername(e.target.value)
+                }
                 className="w-full rounded-2xl bg-zinc-900/80 border border-zinc-700 px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -173,7 +193,9 @@ export default function SetupProfilePage() {
               <textarea
                 placeholder="Tell people about yourself..."
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={(e) =>
+                  setBio(e.target.value)
+                }
                 rows={4}
                 className="w-full rounded-2xl bg-zinc-900/80 border border-zinc-700 px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
               />

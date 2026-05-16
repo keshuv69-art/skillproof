@@ -24,19 +24,30 @@ export async function middleware(req: NextRequest) {
 
   const pathname = req.nextUrl.pathname;
 
-  // 🔒 Protected routes
-  if (
-    (pathname.startsWith("/profile") ||
-      pathname.startsWith("/admin")) &&
-    !user
-  ) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  // Public routes
+  const isPublicRoute =
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname.startsWith("/u/") ||
+    pathname.startsWith("/discover");
+
+  // Protected routes
+  const isProtectedRoute =
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/admin");
+
+  // Not logged in -> redirect protected pages
+  if (isProtectedRoute && !user) {
+    return NextResponse.redirect(
+      new URL("/login", req.url)
+    );
   }
 
-  // 🔥 Force onboarding if username missing
+  // Logged in -> check onboarding
   if (
     user &&
-    pathname !== "/setup-profile" &&
+    !pathname.startsWith("/setup-profile") &&
     !pathname.startsWith("/u/")
   ) {
     const { data: profile } = await supabase
@@ -45,6 +56,7 @@ export async function middleware(req: NextRequest) {
       .eq("id", user.id)
       .maybeSingle();
 
+    // Missing username -> onboarding
     if (!profile?.username) {
       return NextResponse.redirect(
         new URL("/setup-profile", req.url)
@@ -52,9 +64,37 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Already onboarded -> prevent access to setup page
+  if (user && pathname === "/setup-profile") {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profile?.username) {
+      return NextResponse.redirect(
+        new URL("/profile", req.url)
+      );
+    }
+  }
+
+  // Logged in users visiting login/signup
+  if (
+    user &&
+    (pathname === "/login" ||
+      pathname === "/signup")
+  ) {
+    return NextResponse.redirect(
+      new URL("/profile", req.url)
+    );
+  }
+
   return response;
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
 };
