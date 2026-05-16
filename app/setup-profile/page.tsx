@@ -8,21 +8,36 @@ export default function SetupProfilePage() {
   const router = useRouter();
 
   const [username, setUsername] = useState("");
+  const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const checkUser = async () => {
+    const loadUser = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (!user) {
         router.push("/login");
+        return;
+      }
+
+      // Check existing profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username, bio")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      // If already setup, go to profile
+      if (profile?.username) {
+        router.push("/profile");
+        return;
       }
     };
 
-    checkUser();
+    loadUser();
   }, [router]);
 
   const handleSave = async () => {
@@ -33,6 +48,23 @@ export default function SetupProfilePage() {
 
     if (!cleanUsername) {
       setMessage("Username is required");
+      setLoading(false);
+      return;
+    }
+
+    // Username format validation
+    const usernameRegex = /^[a-z0-9_]+$/;
+
+    if (!usernameRegex.test(cleanUsername)) {
+      setMessage(
+        "Username can only contain lowercase letters, numbers, and underscores"
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (cleanUsername.length < 3) {
+      setMessage("Username must be at least 3 characters");
       setLoading(false);
       return;
     }
@@ -65,6 +97,7 @@ export default function SetupProfilePage() {
       .from("profiles")
       .update({
         username: cleanUsername,
+        bio: bio.trim() || null,
       })
       .eq("id", user.id);
 
@@ -78,49 +111,91 @@ export default function SetupProfilePage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center px-6">
-      <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+    <main className="min-h-screen bg-gradient-to-br from-black via-zinc-950 to-black text-white flex items-center justify-center px-6 relative overflow-hidden">
 
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold tracking-tight">
-            Choose Username
-          </h1>
+      {/* Background Glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 via-indigo-700/10 to-transparent blur-3xl opacity-40" />
 
-          <p className="text-zinc-400 mt-4">
-            Your public SkillProof identity.
-          </p>
+      <div className="relative w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl shadow-[0_0_60px_rgba(168,85,247,0.12)] p-8 md:p-10">
 
-          <p className="text-purple-400 text-sm mt-2">
-            skillproof.app/u/username
-          </p>
-        </div>
+        {/* Decorative Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-indigo-500/10 pointer-events-none" />
 
-        <div className="space-y-4">
+        <div className="relative">
 
-          <input
-            type="text"
-            autoComplete="username"
-            spellCheck={false}
-            autoCapitalize="none"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full rounded-2xl bg-zinc-900 border border-zinc-700 px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
+          <div className="text-center mb-10">
 
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-fuchsia-600 py-4 font-semibold text-white hover:opacity-90 transition disabled:opacity-50"
-          >
-            {loading ? "Saving..." : "Continue"}
-          </button>
+            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-6">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Create Your Identity
+            </div>
 
-          {message && (
-            <p className="text-center text-sm text-zinc-400 pt-2">
-              {message}
+            <h1 className="text-5xl font-bold tracking-tight">
+              Setup Profile
+            </h1>
+
+            <p className="text-zinc-400 mt-4">
+              Choose your public SkillProof identity.
             </p>
-          )}
+
+            <p className="text-purple-400 text-sm mt-3">
+              skillproof.app/u/username
+            </p>
+
+          </div>
+
+          <div className="space-y-5">
+
+            {/* Username */}
+            <div>
+              <label className="block text-sm text-zinc-400 mb-2">
+                Username
+              </label>
+
+              <input
+                type="text"
+                autoComplete="username"
+                spellCheck={false}
+                autoCapitalize="none"
+                placeholder="yourname"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full rounded-2xl bg-zinc-900/80 border border-zinc-700 px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            {/* Bio */}
+            <div>
+              <label className="block text-sm text-zinc-400 mb-2">
+                Bio
+              </label>
+
+              <textarea
+                placeholder="Tell people about yourself..."
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows={4}
+                className="w-full rounded-2xl bg-zinc-900/80 border border-zinc-700 px-5 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              />
+            </div>
+
+            {/* Button */}
+            <button
+              onClick={handleSave}
+              disabled={loading}
+              className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-fuchsia-600 py-4 font-semibold text-white hover:opacity-90 transition disabled:opacity-50 shadow-[0_0_30px_rgba(168,85,247,0.25)]"
+            >
+              {loading ? "Saving..." : "Continue"}
+            </button>
+
+            {/* Message */}
+            {message && (
+              <p className="text-center text-sm text-zinc-400 pt-2">
+                {message}
+              </p>
+            )}
+
+          </div>
 
         </div>
 

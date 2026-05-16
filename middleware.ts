@@ -24,7 +24,7 @@ export async function middleware(req: NextRequest) {
 
   const pathname = req.nextUrl.pathname;
 
-  // Protected routes
+  // 🔒 Protected routes
   if (
     (pathname.startsWith("/profile") ||
       pathname.startsWith("/admin")) &&
@@ -33,7 +33,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Force setup-profile if username missing
+  // 🔥 Force onboarding if username missing
   if (
     user &&
     pathname !== "/setup-profile" &&
@@ -43,7 +43,7 @@ export async function middleware(req: NextRequest) {
       .from("profiles")
       .select("username")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (!profile?.username) {
       return NextResponse.redirect(
@@ -56,9 +56,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/profile/:path*",
-    "/admin/:path*",
-    "/setup-profile",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
