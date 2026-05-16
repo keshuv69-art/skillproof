@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 
+import Link from "next/link";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 
 const geist = Geist({
@@ -25,48 +26,74 @@ export default async function RootLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // ✅ YOUR admin email
+  // ✅ Admin check
   const isAdmin = user?.email === "keshuv69@gmail.com";
 
   return (
     <html lang="en">
-      <body className={`${geist.className} bg-zinc-950 text-white antialiased`}>
-        <div className="min-h-screen flex flex-col">
+      <body
+        className={`${geist.className} bg-zinc-950 text-white antialiased`}
+      >
+        <div className="min-h-screen flex flex-col relative overflow-hidden">
 
-          {/* Navbar */}
-          <header className="border-b border-zinc-800 bg-zinc-900/60 backdrop-blur">
-            <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+          {/* Background Glow */}
+          <div className="fixed inset-0 bg-gradient-to-br from-purple-700/10 via-indigo-700/5 to-transparent blur-3xl pointer-events-none" />
 
-              {/* 🔥 Logo */}
-              <a
+          {/* NAVBAR */}
+          <header className="sticky top-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-2xl">
+            <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+
+              {/* Logo */}
+              <Link
                 href="/"
-                className="text-xl font-semibold tracking-tight hover:opacity-80 transition"
+                className="text-2xl font-bold tracking-tight hover:opacity-80 transition"
               >
                 <span className="text-white">Skill</span>
 
-                <span className="bg-gradient-to-r from-purple-400 to-fuchsia-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent">
                   Proof
                 </span>
-              </a>
+              </Link>
 
-              {/* Nav */}
-              <nav className="flex items-center gap-6 text-sm text-zinc-400">
+              {/* Navigation */}
+              <nav className="flex items-center gap-6 text-sm">
 
-                <a
-                  href="/profile"
-                  className="hover:text-white transition"
+                <Link
+                  href="/discover"
+                  className="text-zinc-400 hover:text-white transition"
                 >
-                  Profile
-                </a>
+                  Discover
+                </Link>
 
-                {/* ✅ ONLY SHOW TO ADMIN */}
+                {user && (
+                  <Link
+                    href="/profile"
+                    className="text-zinc-400 hover:text-white transition"
+                  >
+                    Profile
+                  </Link>
+                )}
+
                 {isAdmin && (
-                  <a
+                  <Link
                     href="/admin"
-                    className="hover:text-white transition"
+                    className="text-zinc-400 hover:text-white transition"
                   >
                     Admin
-                  </a>
+                  </Link>
+                )}
+
+                {!user ? (
+                  <Link
+                    href="/login"
+                    className="rounded-xl border border-purple-500/20 bg-purple-500/10 px-4 py-2 text-purple-300 hover:bg-purple-500/20 transition"
+                  >
+                    Login
+                  </Link>
+                ) : (
+                  <div className="px-4 py-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 text-xs">
+                    Logged In
+                  </div>
                 )}
 
               </nav>
@@ -74,13 +101,13 @@ export default async function RootLayout({
             </div>
           </header>
 
-          {/* Main */}
-          <main className="flex-1">
+          {/* MAIN */}
+          <main className="relative flex-1">
             {children}
           </main>
 
-          {/* Footer */}
-          <footer className="border-t border-zinc-800 text-center text-xs text-zinc-500 py-6">
+          {/* FOOTER */}
+          <footer className="border-t border-white/10 bg-black/20 backdrop-blur-xl text-center text-xs text-zinc-500 py-6">
             © {new Date().getFullYear()} SkillProof. All rights reserved.
           </footer>
 
