@@ -159,7 +159,9 @@ export default async function ProfilePage() {
                 </p>
 
                 <p className="text-emerald-400 font-medium">
-                  Active & Verified
+                  {verifiedSkills > 0
+                    ? "Verified Professional"
+                    : "Profile Active"}
                 </p>
 
               </div>

@@ -20,7 +20,7 @@ export default async function PublicProfile({
   // 🔥 Get profile
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, username")
+    .select("id, username, bio")
     .eq("username", username)
     .maybeSingle();
 
@@ -44,10 +44,12 @@ export default async function PublicProfile({
 
   const skills: SkillRow[] = skillsData ?? [];
 
+  const hasVerifiedSkills = skills.length > 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-zinc-950 to-black text-white relative overflow-hidden">
 
-      {/* 🌌 Background Glow */}
+      {/* Background Glow */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-700/20 via-indigo-700/10 to-transparent blur-3xl opacity-40" />
 
       {/* Additional Glow */}
@@ -55,98 +57,144 @@ export default async function PublicProfile({
 
       <div className="relative max-w-5xl mx-auto px-6 py-16">
 
-        {/* HERO CARD */}
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl shadow-[0_0_60px_rgba(168,85,247,0.12)] p-8 md:p-10 mb-14">
+        {/* HERO */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl shadow-[0_0_60px_rgba(168,85,247,0.12)] p-8 md:p-10 mb-14">
 
           {/* Decorative Gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-indigo-500/10 pointer-events-none" />
 
-          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+          <div className="relative flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10">
 
             {/* LEFT */}
-            <div>
-              <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-5">
+            <div className="flex-1">
+
+              <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-6">
                 <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                Verified Skill Profile
+
+                {hasVerifiedSkills
+                  ? "Verified Professional"
+                  : "SkillProof Member"}
               </div>
 
-              <h1 className="text-5xl font-bold tracking-tight">
-                @{profile.username}
-              </h1>
+              <div className="flex items-center gap-3 flex-wrap">
 
-              <p className="mt-4 text-zinc-400 max-w-xl">
-                Public verified portfolio powered by SkillProof.
+                <h1 className="text-5xl font-bold tracking-tight">
+                  @{profile.username}
+                </h1>
+
+                {hasVerifiedSkills && (
+                  <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">
+                    Verified
+                  </div>
+                )}
+
+              </div>
+
+              <p className="mt-4 text-zinc-400 max-w-2xl leading-relaxed">
+                {profile.bio ||
+                  "This user hasn’t added a bio yet."}
               </p>
 
-              {/* Stats */}
-              <div className="flex items-center gap-6 mt-8">
+              {/* STATS */}
+              <div className="flex items-center gap-8 mt-10">
 
                 <div>
-                  <p className="text-3xl font-bold text-white">
+
+                  <p className="text-4xl font-bold text-white">
                     {skills.length}
                   </p>
 
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-zinc-500 mt-1">
                     Verified Skills
                   </p>
+
                 </div>
 
-                <div className="w-px h-12 bg-white/10" />
+                <div className="w-px h-14 bg-white/10" />
 
                 <div>
-                  <p className="text-3xl font-bold text-indigo-300">
-                    100%
+
+                  <p className="text-4xl font-bold text-indigo-300">
+                    {skills.filter((s) => s.proof_url).length}
                   </p>
 
-                  <p className="text-sm text-zinc-500">
-                    Verified
+                  <p className="text-sm text-zinc-500 mt-1">
+                    Proof Submissions
                   </p>
+
                 </div>
 
               </div>
+
             </div>
 
             {/* RIGHT */}
-            <div className="flex flex-col items-start md:items-end gap-4">
+            <div className="flex flex-col gap-4 min-w-[240px]">
 
-              <div className="px-5 py-3 rounded-2xl bg-black/30 border border-white/10 backdrop-blur-xl">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 mb-1">
+              <div className="rounded-2xl border border-white/10 bg-black/20 backdrop-blur-xl p-5">
+
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 mb-2">
                   Profile Status
                 </p>
 
                 <p className="text-emerald-400 font-medium">
-                  Active & Verified
+                  {hasVerifiedSkills
+                    ? "Active & Verified"
+                    : "Profile Active"}
                 </p>
+
               </div>
 
               <CopyProfileLink username={profile.username} />
 
             </div>
+
           </div>
+
         </div>
 
-        {/* SKILLS */}
+        {/* SKILLS SECTION */}
         <div>
 
           <div className="flex items-center justify-between mb-8">
+
             <div>
+
               <h2 className="text-3xl font-bold">
                 Verified Skills
               </h2>
 
               <p className="text-zinc-500 mt-2">
-                Skills approved through the SkillProof verification system.
+                Approved skills verified through SkillProof.
               </p>
+
             </div>
+
           </div>
 
+          {/* EMPTY */}
           {skills.length === 0 && (
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-zinc-400">
-              No verified skills yet.
+            <div className="rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-xl p-10 text-center">
+
+              <div className="text-5xl mb-5">
+                🚀
+              </div>
+
+              <h3 className="text-2xl font-semibold">
+                No verified skills yet
+              </h3>
+
+              <p className="text-zinc-500 mt-3 max-w-md mx-auto">
+                This user has not received any approved skill
+                verifications yet.
+              </p>
+
             </div>
           )}
 
+          {/* SKILL GRID */}
           <div className="grid gap-6 sm:grid-cols-2">
+
             {skills.map((item, i) => {
               let skillName = "Unknown Skill";
 
@@ -167,88 +215,94 @@ export default async function PublicProfile({
 
                   <div className="relative">
 
-                    <div className="flex justify-between items-start mb-4">
+                    {/* TOP */}
+                    <div className="flex items-start justify-between mb-5">
 
                       <div>
-                        <h3 className="text-xl font-semibold group-hover:text-indigo-300 transition">
+
+                        <h3 className="text-2xl font-semibold group-hover:text-indigo-300 transition">
                           {skillName}
                         </h3>
 
-                        <p className="text-sm text-zinc-500 mt-1">
-                          Verified expertise
+                        <p className="text-sm text-zinc-500 mt-2">
+                          Verified professional skill
                         </p>
+
                       </div>
 
-                      <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs">
                         verified
                       </span>
+
                     </div>
 
-                    <div className="mt-6">
+                    {/* LEVEL */}
+                    <div className="mb-6">
 
-                      <div>
-                        <p className="text-xs uppercase tracking-wider text-zinc-500">
-                          Skill Level
-                        </p>
+                      <p className="text-xs uppercase tracking-wider text-zinc-500">
+                        Skill Level
+                      </p>
 
-                        <p className="text-lg font-medium mt-1">
-                          {item.level}
-                        </p>
-                      </div>
+                      <p className="text-xl font-medium mt-2">
+                        {item.level}
+                      </p>
 
-                      {/* PROOF PREVIEW */}
-                      {item.proof_url && (
-                        <div className="mt-6">
+                    </div>
 
-                          <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/30">
+                    {/* PROOF */}
+                    {item.proof_url && (
+                      <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/30">
 
-                            {/* IMAGE PREVIEW */}
-                            {item.proof_url.match(/\.(jpeg|jpg|png|gif|webp)$/i) ? (
-                              <img
-                                src={item.proof_url}
-                                alt="Skill proof"
-                                className="w-full h-48 object-cover"
-                              />
-                            ) : (
-                              <div className="h-40 flex items-center justify-center text-zinc-500 text-sm bg-zinc-900/50">
-                                External Proof Document
-                              </div>
-                            )}
+                        {/* IMAGE */}
+                        {item.proof_url.match(
+                          /\.(jpeg|jpg|png|gif|webp)$/i
+                        ) ? (
+                          <img
+                            src={item.proof_url}
+                            alt="Skill proof"
+                            className="w-full h-52 object-cover"
+                          />
+                        ) : (
+                          <div className="h-44 flex items-center justify-center text-zinc-500 text-sm bg-zinc-900/50">
+                            External Proof Document
+                          </div>
+                        )}
 
-                            {/* FOOTER */}
-                            <div className="p-4 border-t border-white/10 flex items-center justify-between">
+                        {/* FOOTER */}
+                        <div className="p-4 border-t border-white/10 flex items-center justify-between">
 
-                              <div>
-                                <p className="text-sm font-medium">
-                                  Verification Proof
-                                </p>
+                          <div>
 
-                                <p className="text-xs text-zinc-500 mt-1">
-                                  Submitted evidence for this skill
-                                </p>
-                              </div>
+                            <p className="text-sm font-medium">
+                              Verification Proof
+                            </p>
 
-                              <a
-                                href={item.proof_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 transition"
-                              >
-                                Open
-                              </a>
+                            <p className="text-xs text-zinc-500 mt-1">
+                              Evidence submitted for approval
+                            </p>
 
-                            </div>
                           </div>
 
-                        </div>
-                      )}
+                          <a
+                            href={item.proof_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 transition"
+                          >
+                            Open
+                          </a>
 
-                    </div>
+                        </div>
+
+                      </div>
+                    )}
 
                   </div>
+
                 </div>
               );
             })}
+
           </div>
 
         </div>

@@ -1,10 +1,12 @@
 "use client";
 
 import { verifySkill, rejectSkill } from "@/app/admin/actions";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 export function AdminSkillCard({ proof }: { proof: any }) {
   const [isPending, startTransition] = useTransition();
+
+  const [note, setNote] = useState("");
 
   // 🔥 Detect image proofs
   const isImage =
@@ -33,6 +35,7 @@ export function AdminSkillCard({ proof }: { proof: any }) {
             </p>
 
             <div className="mt-3 space-y-1">
+
               <p className="text-sm text-zinc-300">
                 @{proof.username}
               </p>
@@ -40,16 +43,19 @@ export function AdminSkillCard({ proof }: { proof: any }) {
               <p className="text-xs text-zinc-500">
                 {proof.user_email}
               </p>
+
             </div>
           </div>
 
           <span className="text-xs px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
             pending
           </span>
+
         </div>
 
         {/* LEVEL */}
         <div className="mb-6">
+
           <p className="text-xs uppercase tracking-wider text-zinc-500">
             Submitted Level
           </p>
@@ -57,6 +63,24 @@ export function AdminSkillCard({ proof }: { proof: any }) {
           <p className="text-lg text-white font-medium mt-1">
             {proof.level}
           </p>
+
+        </div>
+
+        {/* REVIEW NOTE */}
+        <div className="mb-6">
+
+          <label className="block text-xs uppercase tracking-wider text-zinc-500 mb-3">
+            Verification Note
+          </label>
+
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Optional moderation note..."
+            rows={3}
+            className="w-full rounded-2xl bg-black/30 border border-white/10 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+          />
+
         </div>
 
         {/* PROOF */}
@@ -83,6 +107,7 @@ export function AdminSkillCard({ proof }: { proof: any }) {
                   <div className="flex items-center justify-between">
 
                     <div>
+
                       <p className="text-white font-medium">
                         External Proof Document
                       </p>
@@ -90,6 +115,7 @@ export function AdminSkillCard({ proof }: { proof: any }) {
                       <p className="text-sm text-zinc-500 mt-1">
                         PDF or external verification file
                       </p>
+
                     </div>
 
                     <div className="text-3xl">
@@ -103,6 +129,7 @@ export function AdminSkillCard({ proof }: { proof: any }) {
 
               {/* VIEW BUTTON */}
               <div className="border-t border-white/10 p-4">
+
                 <a
                   href={proof.proof_url}
                   target="_blank"
@@ -111,6 +138,7 @@ export function AdminSkillCard({ proof }: { proof: any }) {
                 >
                   Open Proof →
                 </a>
+
               </div>
             </>
           ) : (
@@ -118,6 +146,28 @@ export function AdminSkillCard({ proof }: { proof: any }) {
               No proof provided
             </div>
           )}
+
+        </div>
+
+        {/* REVIEW TIPS */}
+        <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4">
+
+          <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">
+            Verification Checklist
+          </p>
+
+          <div className="space-y-2 text-sm text-zinc-400">
+
+            <p>• Is the proof authentic?</p>
+
+            <p>• Does it match the claimed skill?</p>
+
+            <p>• Is the level believable?</p>
+
+            <p>• Is the evidence clear enough?</p>
+
+          </div>
+
         </div>
 
         {/* ACTIONS */}
