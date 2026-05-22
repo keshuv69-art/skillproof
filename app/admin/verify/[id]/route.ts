@@ -11,7 +11,7 @@ export async function POST(
 
   await supabase
     .from("user_skills")
-    .update({ status: "verified" })
+    .update({ status: "approved" })
     .eq("id", id);
 
   return NextResponse.redirect(new URL("/admin", req.url));

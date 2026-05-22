@@ -13,7 +13,7 @@ export async function verifySkill(id: string) {
   const { error } = await supabase
     .from("user_skills")
     .update({
-      status: "verified", // ✅ FIXED
+      status: "approved", // ✅ FIXED
     })
     .eq("id", id);
 
