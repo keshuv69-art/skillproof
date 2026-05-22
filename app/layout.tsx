@@ -10,8 +10,33 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "SkillProof",
-  description: "Verified skill profiles powered by proof",
+  title: {
+    default: "SkillProof",
+    template: "%s | SkillProof",
+  },
+  description:
+    "A platform for publicly verified skills powered by real proof and trusted verification.",
+  metadataBase: new URL("https://skillproof-zeta.vercel.app"),
+
+  openGraph: {
+    title: "SkillProof",
+    description:
+      "Publicly verified skill profiles powered by proof and trusted verification.",
+    url: "https://skillproof-zeta.vercel.app",
+    siteName: "SkillProof",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "SkillProof",
+    description:
+      "Publicly verified skill profiles powered by proof and trusted verification.",
+  },
+
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default async function RootLayout({
