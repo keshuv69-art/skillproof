@@ -13,11 +13,13 @@ export function AddSkillCard({ userId }: { userId: string }) {
   const [skillId, setSkillId] = useState("");
   const [level, setLevel] = useState("Beginner");
 
-  // 🔥 FILE STATE
+  // FILE
   const [file, setFile] = useState<File | null>(null);
 
-  // 🔥 FINAL URL STORED IN DB
+  // PROOF
   const [proofUrl, setProofUrl] = useState("");
+  const [proofLink, setProofLink] = useState("");
+  const [proofDescription, setProofDescription] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -42,7 +44,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
     fetchSkills();
   }, []);
 
-  // 🔥 FILE UPLOAD
+  // FILE UPLOAD
   const handleFileUpload = async (selectedFile: File) => {
     try {
       setUploading(true);
@@ -53,7 +55,6 @@ export function AddSkillCard({ userId }: { userId: string }) {
 
       const filePath = `proofs/${fileName}`;
 
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("proofs")
         .upload(filePath, selectedFile);
@@ -68,7 +69,6 @@ export function AddSkillCard({ userId }: { userId: string }) {
         return;
       }
 
-      // Get public URL
       const { data } = supabase.storage
         .from("proofs")
         .getPublicUrl(filePath);
@@ -84,7 +84,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
     }
   };
 
-  // 🔥 SUBMIT SKILL
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -93,13 +93,21 @@ export function AddSkillCard({ userId }: { userId: string }) {
       return;
     }
 
+    if (!proofUrl && !proofLink) {
+      alert("Please upload proof or provide a portfolio link.");
+      return;
+    }
+
     setLoading(true);
+
+    const finalProof =
+      proofLink.trim() !== "" ? proofLink : proofUrl;
 
     const { error } = await supabase.from("user_skills").insert({
       user_id: userId,
       skill_id: skillId,
       level,
-      proof_url: proofUrl || null,
+      proof_url: finalProof,
       status: "pending",
     });
 
@@ -117,9 +125,14 @@ export function AddSkillCard({ userId }: { userId: string }) {
   return (
     <div className="bg-zinc-900/60 backdrop-blur border border-zinc-800 rounded-2xl p-6 hover:border-indigo-500/40 transition-all duration-300">
 
-      <h3 className="text-lg font-semibold text-white mb-6">
+      <h3 className="text-lg font-semibold text-white mb-2">
         Add a New Skill
       </h3>
+
+      <p className="text-sm text-zinc-500 mb-6">
+        Showcase your work using uploads, videos, reels, portfolios,
+        or public proof links.
+      </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
 
@@ -167,6 +180,25 @@ export function AddSkillCard({ userId }: { userId: string }) {
           </select>
         </div>
 
+        {/* PROOF LINK */}
+        <div>
+          <label className="block text-sm text-zinc-400 mb-2">
+            Portfolio / Proof Link
+          </label>
+
+          <input
+            type="url"
+            value={proofLink}
+            onChange={(e) => setProofLink(e.target.value)}
+            placeholder="https://youtube.com/... or portfolio link"
+            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          />
+
+          <p className="text-xs text-zinc-500 mt-2">
+            Supports YouTube, Vimeo, Drive, Behance, portfolios, etc.
+          </p>
+        </div>
+
         {/* FILE UPLOAD */}
         <div>
           <label className="block text-sm text-zinc-400 mb-2">
@@ -177,7 +209,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
 
             <input
               type="file"
-              accept=".pdf,.png,.jpg,.jpeg"
+              accept=".pdf,.png,.jpg,.jpeg,.mp4,.mov"
               onChange={async (e) => {
                 const selectedFile = e.target.files?.[0];
 
@@ -191,7 +223,7 @@ export function AddSkillCard({ userId }: { userId: string }) {
             />
 
             <p className="text-xs text-zinc-500 mt-3">
-              Supported formats: PDF, PNG, JPG
+              Supported formats: PDF, PNG, JPG, MP4, MOV
             </p>
 
             {file && (
@@ -212,6 +244,21 @@ export function AddSkillCard({ userId }: { userId: string }) {
               </div>
             )}
           </div>
+        </div>
+
+        {/* DESCRIPTION */}
+        <div>
+          <label className="block text-sm text-zinc-400 mb-2">
+            Proof Description (Optional)
+          </label>
+
+          <textarea
+            value={proofDescription}
+            onChange={(e) => setProofDescription(e.target.value)}
+            placeholder="Describe the work you are submitting..."
+            rows={4}
+            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition resize-none"
+          />
         </div>
 
         {/* SUBMIT */}
