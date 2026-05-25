@@ -104,12 +104,13 @@ export function AddSkillCard({ userId }: { userId: string }) {
       proofLink.trim() !== "" ? proofLink : proofUrl;
 
     const { error } = await supabase.from("user_skills").insert({
-      user_id: userId,
-      skill_id: skillId,
-      level,
-      proof_url: finalProof,
-      status: "pending",
-    });
+  user_id: userId,
+  skill_id: skillId,
+  level,
+  proof_url: finalProof,
+  proof_description: proofDescription,
+  status: "pending",
+});
 
     if (error) {
       console.error("INSERT ERROR:", JSON.stringify(error, null, 2));

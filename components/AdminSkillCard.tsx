@@ -8,15 +8,48 @@ export function AdminSkillCard({ proof }: { proof: any }) {
 
   const [note, setNote] = useState("");
 
-  // 🔥 Detect image proofs
+  const url = proof.proof_url || "";
+
+  // IMAGE
   const isImage =
-    proof.proof_url &&
-    (
-      proof.proof_url.includes(".png") ||
-      proof.proof_url.includes(".jpg") ||
-      proof.proof_url.includes(".jpeg") ||
-      proof.proof_url.includes("image")
-    );
+    url.includes(".png") ||
+    url.includes(".jpg") ||
+    url.includes(".jpeg") ||
+    url.includes("image");
+
+  // VIDEO
+  const isVideo =
+    url.includes(".mp4") ||
+    url.includes(".mov") ||
+    url.includes("video");
+
+  // YOUTUBE
+  const isYoutube =
+    url.includes("youtube.com") ||
+    url.includes("youtu.be");
+
+  // VIMEO
+  const isVimeo =
+    url.includes("vimeo.com");
+
+  // YOUTUBE EMBED
+  const getYoutubeEmbed = (link: string) => {
+    if (link.includes("youtu.be/")) {
+      return link.replace(
+        "youtu.be/",
+        "youtube.com/embed/"
+      );
+    }
+
+    if (link.includes("watch?v=")) {
+      return link.replace(
+        "watch?v=",
+        "embed/"
+      );
+    }
+
+    return link;
+  };
 
   return (
     <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-xl p-6 transition-all duration-300 hover:border-purple-500/40 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(168,85,247,0.18)]">
@@ -66,6 +99,21 @@ export function AdminSkillCard({ proof }: { proof: any }) {
 
         </div>
 
+        {/* DESCRIPTION */}
+        {proof.proof_description && (
+          <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-4">
+
+            <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">
+              Creator Description
+            </p>
+
+            <p className="text-sm text-zinc-300 leading-relaxed">
+              {proof.proof_description}
+            </p>
+
+          </div>
+        )}
+
         {/* REVIEW NOTE */}
         <div className="mb-6">
 
@@ -86,52 +134,92 @@ export function AdminSkillCard({ proof }: { proof: any }) {
         {/* PROOF */}
         <div className="rounded-2xl border border-white/10 bg-black/20 overflow-hidden">
 
-          {proof.proof_url ? (
+          {url ? (
             <>
-              {/* IMAGE PREVIEW */}
-              {isImage ? (
+              {/* IMAGE */}
+              {isImage && (
                 <a
-                  href={proof.proof_url}
+                  href={url}
                   target="_blank"
                   rel="noreferrer"
                 >
                   <img
-                    src={proof.proof_url}
+                    src={url}
                     alt="Proof"
-                    className="w-full h-64 object-cover hover:scale-[1.02] transition duration-300"
+                    className="w-full h-72 object-cover hover:scale-[1.02] transition duration-300"
                   />
                 </a>
-              ) : (
+              )}
+
+              {/* VIDEO */}
+              {isVideo && (
+                <video
+                  controls
+                  className="w-full max-h-[500px] bg-black"
+                >
+                  <source src={url} />
+                </video>
+              )}
+
+              {/* YOUTUBE */}
+              {isYoutube && (
+                <iframe
+                  src={getYoutubeEmbed(url)}
+                  className="w-full aspect-video"
+                  allowFullScreen
+                />
+              )}
+
+              {/* VIMEO */}
+              {isVimeo && (
                 <div className="p-6">
 
-                  <div className="flex items-center justify-between">
+                  <p className="text-white font-medium">
+                    Vimeo Portfolio Link
+                  </p>
 
-                    <div>
-
-                      <p className="text-white font-medium">
-                        External Proof Document
-                      </p>
-
-                      <p className="text-sm text-zinc-500 mt-1">
-                        PDF or external verification file
-                      </p>
-
-                    </div>
-
-                    <div className="text-3xl">
-                      📄
-                    </div>
-
-                  </div>
+                  <p className="text-sm text-zinc-500 mt-2">
+                    Open external Vimeo showcase
+                  </p>
 
                 </div>
               )}
+
+              {/* DEFAULT */}
+              {!isImage &&
+                !isVideo &&
+                !isYoutube &&
+                !isVimeo && (
+                  <div className="p-6">
+
+                    <div className="flex items-center justify-between">
+
+                      <div>
+
+                        <p className="text-white font-medium">
+                          External Portfolio Proof
+                        </p>
+
+                        <p className="text-sm text-zinc-500 mt-1">
+                          Portfolio, document, or external link
+                        </p>
+
+                      </div>
+
+                      <div className="text-3xl">
+                        🔗
+                      </div>
+
+                    </div>
+
+                  </div>
+                )}
 
               {/* VIEW BUTTON */}
               <div className="border-t border-white/10 p-4">
 
                 <a
-                  href={proof.proof_url}
+                  href={url}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 text-sm text-purple-300 hover:text-purple-200 transition"
@@ -165,6 +253,8 @@ export function AdminSkillCard({ proof }: { proof: any }) {
             <p>• Is the level believable?</p>
 
             <p>• Is the evidence clear enough?</p>
+
+            <p>• Is the creator showcasing original work?</p>
 
           </div>
 
