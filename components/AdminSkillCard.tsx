@@ -261,29 +261,33 @@ export function AdminSkillCard({ proof }: { proof: any }) {
         </div>
 
         {/* ACTIONS */}
-        <div className="grid grid-cols-2 gap-3 mt-6">
+<div className="grid grid-cols-2 gap-3 mt-6">
 
-          <button
-            disabled={isPending}
-            onClick={() =>
-              startTransition(() => verifySkill(proof.id))
-            }
-            className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 py-3 font-medium text-emerald-400 hover:bg-emerald-500/20 transition disabled:opacity-50"
-          >
-            {isPending ? "Processing..." : "Approve Skill"}
-          </button>
+  <button
+    disabled={isPending}
+    onClick={() =>
+      startTransition(() =>
+        verifySkill(proof.id, note)
+      )
+    }
+    className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 py-3 font-medium text-emerald-400 hover:bg-emerald-500/20 transition disabled:opacity-50"
+  >
+    {isPending ? "Processing..." : "Approve Skill"}
+  </button>
 
-          <button
-            disabled={isPending}
-            onClick={() =>
-              startTransition(() => rejectSkill(proof.id))
-            }
-            className="rounded-2xl bg-red-500/10 border border-red-500/20 py-3 font-medium text-red-400 hover:bg-red-500/20 transition disabled:opacity-50"
-          >
-            {isPending ? "Processing..." : "Reject Skill"}
-          </button>
+  <button
+    disabled={isPending}
+    onClick={() =>
+      startTransition(() =>
+        rejectSkill(proof.id, note)
+      )
+    }
+    className="rounded-2xl bg-red-500/10 border border-red-500/20 py-3 font-medium text-red-400 hover:bg-red-500/20 transition disabled:opacity-50"
+  >
+    {isPending ? "Processing..." : "Reject Skill"}
+  </button>
 
-        </div>
+</div>
 
       </div>
     </div>
