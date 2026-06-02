@@ -8,6 +8,7 @@ type RawSubmission = {
   user_id: string;
   level: string;
   proof_url: string | null;
+  proof_description: string | null;
   status: string;
   created_at?: string;
   skills: { name: string } | { name: string }[] | null;
@@ -34,16 +35,17 @@ export default async function AdminPage() {
   const { data: submissionsData, error } = await supabase
     .from("user_skills")
     .select(`
-      id,
-      user_id,
-      level,
-      proof_url,
-      status,
-      created_at,
-      skills (
-        name
-      )
-    `)
+  id,
+  user_id,
+  level,
+  proof_url,
+  proof_description,
+  status,
+  created_at,
+  skills (
+    name
+  )
+`)
     .eq("status", "pending")
     .order("created_at", { ascending: false });
 
@@ -199,15 +201,16 @@ export default async function AdminPage() {
                   <AdminSkillCard
                     key={item.id}
                     proof={{
-                      id: item.id,
-                      skill_name: skillName,
-                      level: item.level,
-                      proof_url: item.proof_url,
-                      user_email:
-                        profile?.email ?? "Unknown",
-                      username:
-                        profile?.username ?? "unknown",
-                    }}
+  id: item.id,
+  skill_name: skillName,
+  level: item.level,
+  proof_url: item.proof_url,
+  proof_description: item.proof_description,
+  user_email:
+    profile?.email ?? "Unknown",
+  username:
+    profile?.username ?? "unknown",
+}}
                   />
                 );
               })}
