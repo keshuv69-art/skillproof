@@ -1,18 +1,15 @@
 "use server";
 
-import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { requireAdmin, supabaseAdmin } from "@/lib/admin";
 
 export async function verifySkill(
   id: string,
   reviewNote?: string
 ) {
-  const { error } = await supabase
+  await requireAdmin();
+
+  const { error } = await supabaseAdmin
     .from("user_skills")
     .update({
       status: "approved",
@@ -21,10 +18,7 @@ export async function verifySkill(
     .eq("id", id);
 
   if (error) {
-    console.error(
-      "Verify error:",
-      JSON.stringify(error, null, 2)
-    );
+    console.error("Verify error:", JSON.stringify(error, null, 2));
     return;
   }
 
@@ -35,7 +29,9 @@ export async function rejectSkill(
   id: string,
   reviewNote?: string
 ) {
-  const { error } = await supabase
+  await requireAdmin();
+
+  const { error } = await supabaseAdmin
     .from("user_skills")
     .update({
       status: "rejected",
@@ -44,10 +40,7 @@ export async function rejectSkill(
     .eq("id", id);
 
   if (error) {
-    console.error(
-      "Reject error:",
-      JSON.stringify(error, null, 2)
-    );
+    console.error("Reject error:", JSON.stringify(error, null, 2));
     return;
   }
 

@@ -22,9 +22,13 @@ export default async function AdminPage() {
     data: { user },
   } = await supabaseUser.auth.getUser();
 
-  const ADMIN_EMAIL = "keshuv69@gmail.com";
+    const { data: profile } = await supabaseUser
+    .from("profiles")
+    .select("role")
+    .eq("id", user?.id ?? "")
+    .single();
 
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || profile?.role !== "admin") {
     redirect("/");
   }
 
